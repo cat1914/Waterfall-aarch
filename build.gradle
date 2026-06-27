@@ -183,6 +183,16 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
+// Pack the aarch64 native libraries from the project root into the mod jar
+// under /natives/, matching the resource path layout Waterfall's NativeLoader
+// expects (/natives/lib{name}-{version}.so). AarchNativeLoader in this mod
+// reads them back from there at runtime.
+processResources {
+    from(rootProject.files('libdirection-0.0.1.so', 'libheavy-0.0.1.so')) {
+        into 'natives'
+    }
+}
+
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {
