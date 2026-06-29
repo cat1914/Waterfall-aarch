@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8.6",
+  "package": "com.waterfall.aarch.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "waterfall_aarch.refmap.json",
+  "mixins": [
+    "MixinNativeLoader"
+  ],
+  "client": [],
+  "server": []
+}

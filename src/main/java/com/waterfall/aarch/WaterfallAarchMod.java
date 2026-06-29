@@ -15,10 +15,22 @@ import net.neoforged.fml.common.Mod;
  * the x86_64 ones Waterfall ships.
  *
  * The actual work happens in {@link AarchNativeLoader#loadAll()}. See its
- * javadoc for the full rationale.
+ * javadoc for the rationale.
  *
- * Load ordering vs. the "waterfall" mod is enforced via an
- * ordering="BEFORE" dependency declared in neoforge.mods.toml.
+ * Defense in depth - two layers ensure Waterfall's x86_64 load path never runs
+ * on aarch64 hosts:
+ *   1. (primary) {@code MixinNativeLoader} patches {@code NativeLoader.loadLibrary/
+ *      loadHeavy/loadDirection} at HEAD to cancel the call once our aarch64
+ *      libraries are loaded. Mixin transform runs during modlauncher bootstrap,
+ *      before any mod's @Mod constructor, so the patch is in place before
+ *      Waterfall's constructor calls NativeLoader.
+ *   2. (belt-and-suspenders) An ordering="BEFORE" dependency on "waterfall" in
+ *      neoforge.mods.toml makes our @Mod constructor run first, so
+ *      {@link AarchNativeLoader#loadAll()} has executed (and isLoaded() returns
+ *      true) by the time Waterfall's constructor runs. If the mixin somehow
+ *      fails to apply, this ordering alone still ensures our libraries are on
+ *      jna.library.path before Waterfall's NativeLoader appends its own (wrong)
+ *      temp dir.
  */
 @Mod(WaterfallAarchMod.MODID)
 public class WaterfallAarchMod {
