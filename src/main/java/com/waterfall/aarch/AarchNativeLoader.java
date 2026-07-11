@@ -49,6 +49,28 @@ public final class AarchNativeLoader {
     private AarchNativeLoader() {}
 
     /**
+     * Whether {@link #loadAll()} has run successfully on this JVM. Used by
+     * {@code MixinNativeLoader} to decide whether to cancel Waterfall's
+     * own {@code NativeLoader.loadLibrary/loadHeavy/loadDirection} calls.
+     */
+    public static boolean isLoaded() {
+        return loaded;
+    }
+
+    /**
+     * Called by {@code MixinNativeLoader} when it intercepts one of
+     * Waterfall's public {@code NativeLoader.loadHeavy/loadDirection} entry
+     * points and is about to let it fall through to the cancelled
+     * {@code loadLibrary} call. Keeping the log here (rather than in the
+     * mixin) means the mixin class has zero non-mixin dependencies, which
+     * makes it easier to reason about.
+     */
+    public static void logSkip(String waterfallMethod) {
+        LOGGER.info("[waterfall-aarch] Skipping Waterfall NativeLoader.{}() - "
+                + "aarch64 libs already loaded by waterfall_aarch", waterfallMethod);
+    }
+
+    /**
      * Extract and System.load() every bundled aarch64 library, then prepend
      * the temp dir to jna.library.path. Safe to call more than once.
      */
